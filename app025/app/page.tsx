@@ -8,6 +8,14 @@ export default function Home() {
         <p className="text-base leading-7 text-slate-600 sm:text-lg">
           AI生成やレンダリングの待ち時間を、サッと切り替えて有効活用できるようにするためのタスク管理アプリです。
         </p>
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            className="w-full rounded-full bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 sm:w-auto"
+          >
+            タイマーを開始
+          </button>
+        </div>
       </div>
     </main>
   );
