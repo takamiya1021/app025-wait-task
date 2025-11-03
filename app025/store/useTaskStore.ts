@@ -1,0 +1,347 @@
+import { create } from 'zustand';
+import { loadAppState, saveAppState, type PersistedAppState } from '@/lib/storage';
+import type {
+  AppSettings,
+  Task,
+  TaskHistory,
+  TaskPriority,
+  TimerSession,
+  UserProgress,
+} from '@/types/models';
+
+type NewTaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
+
+interface TaskStoreState {
+  tasks: Task[];
+  currentSession: TimerSession | null;
+  history: TaskHistory[];
+  settings: AppSettings;
+  progress: UserProgress;
+}
+
+interface TaskStoreActions {
+  addTask: (task: NewTaskInput) => void;
+  removeTask: (id: string) => void;
+  updateTask: (id: string, updates: Partial<Task>) => void;
+  toggleTaskCompletion: (id: string) => void;
+  startTimer: (durationMinutes: number) => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  stopTimer: () => void;
+  updateRemainingTime: (seconds: number) => void;
+  recordSession: (completedTaskIds: string[]) => void;
+  filteredTasks: (maxDuration: number, priority?: TaskPriority) => Task[];
+  todayStats: () => TaskHistory | null;
+  reset: () => void;
+}
+
+export type TaskStore = TaskStoreState & TaskStoreActions;
+
+const priorityOrder: Record<TaskPriority, number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
+
+const defaultSettings: AppSettings = {
+  notificationSound: true,
+  alwaysOnTop: false,
+  defaultDuration: 5,
+  popupWidth: 400,
+  popupHeight: 600,
+  theme: 'system',
+};
+
+const createInitialState = (): TaskStoreState => ({
+  tasks: [],
+  currentSession: null,
+  history: [],
+  settings: { ...defaultSettings },
+  progress: {
+    totalSessions: 0,
+    totalCompletedTasks: 0,
+    averageSessionDuration: 0,
+    lastActiveAt: undefined,
+    totalFocusMinutes: 0,
+  },
+});
+
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  return `task-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+export const useTaskStore = create<TaskStore>((set, get) => ({
+  ...createInitialState(),
+
+  addTask: (taskInput) => {
+    const now = new Date();
+
+    const newTask: Task = {
+      id: generateId(),
+      createdAt: now,
+      updatedAt: now,
+      completedAt: taskInput.completed ? taskInput.completedAt ?? now : undefined,
+      ...taskInput,
+    };
+
+    set((state) => ({ tasks: [...state.tasks, newTask] }));
+  },
+
+  removeTask: (id) => {
+    set((state) => ({ tasks: state.tasks.filter((task) => task.id !== id) }));
+  },
+
+  updateTask: (id, updates) => {
+    const now = new Date();
+    set((state) => ({
+      tasks: state.tasks.map((task) => {
+        if (task.id !== id) {
+          return task;
+        }
+
+        const completed =
+          typeof updates.completed === 'boolean' ? updates.completed : task.completed;
+
+        return {
+          ...task,
+          ...updates,
+          completed,
+          updatedAt: now,
+          completedAt: completed ? updates.completedAt ?? task.completedAt ?? now : undefined,
+        };
+      }),
+    }));
+  },
+
+  toggleTaskCompletion: (id) => {
+    const now = new Date();
+    set((state) => ({
+      tasks: state.tasks.map((task) => {
+        if (task.id !== id) {
+          return task;
+        }
+
+        const nextCompleted = !task.completed;
+        return {
+          ...task,
+          completed: nextCompleted,
+          updatedAt: now,
+          completedAt: nextCompleted ? now : undefined,
+        };
+      }),
+    }));
+  },
+
+  startTimer: (durationMinutes) => {
+    const startTime = new Date();
+    const session: TimerSession = {
+      id: generateId(),
+      startTime,
+      duration: durationMinutes,
+      remainingTime: durationMinutes * 60,
+      isRunning: true,
+      isPaused: false,
+      completedTasks: [],
+    };
+
+    set({ currentSession: session });
+  },
+
+  pauseTimer: () => {
+    set((state) => {
+      if (!state.currentSession) {
+        return {};
+      }
+
+      return {
+        currentSession: {
+          ...state.currentSession,
+          isPaused: true,
+          isRunning: false,
+        },
+      };
+    });
+  },
+
+  resumeTimer: () => {
+    set((state) => {
+      if (!state.currentSession) {
+        return {};
+      }
+
+      return {
+        currentSession: {
+          ...state.currentSession,
+          isPaused: false,
+          isRunning: true,
+        },
+      };
+    });
+  },
+
+  stopTimer: () => {
+    set({ currentSession: null });
+  },
+
+  updateRemainingTime: (seconds) => {
+    set((state) => {
+      if (!state.currentSession) {
+        return {};
+      }
+
+      return {
+        currentSession: {
+          ...state.currentSession,
+          remainingTime: seconds,
+        },
+      };
+    });
+  },
+
+  recordSession: (completedTaskIds) => {
+    if (completedTaskIds.length === 0) {
+      return;
+    }
+
+    const { tasks, history, progress } = get();
+    const completedTasks = tasks.filter((task) => completedTaskIds.includes(task.id));
+
+    if (completedTasks.length === 0) {
+      return;
+    }
+
+    const totalTime = completedTasks.reduce((sum, task) => sum + task.duration, 0);
+    const todayKey = new Date().toISOString().split('T')[0];
+
+    const tasksByCategory = completedTasks.reduce<Record<string, number>>((acc, task) => {
+      const category = task.category ?? 'uncategorized';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const existingHistoryIndex = history.findIndex((item) => item.date === todayKey);
+
+    set((state) => {
+      const nextHistory = [...state.history];
+
+      if (existingHistoryIndex >= 0) {
+        const existing = nextHistory[existingHistoryIndex];
+        nextHistory[existingHistoryIndex] = {
+          ...existing,
+          totalTime: existing.totalTime + totalTime,
+          completedTasks: existing.completedTasks + completedTasks.length,
+          tasksByCategory: {
+            ...existing.tasksByCategory,
+            ...tasksByCategory,
+          },
+        };
+      } else {
+        nextHistory.push({
+          date: todayKey,
+          totalTime,
+          completedTasks: completedTasks.length,
+          tasksByCategory,
+        });
+      }
+
+      const nextTotalSessions = progress.totalSessions + 1;
+      const totalCompletedTasks = progress.totalCompletedTasks + completedTasks.length;
+      const totalFocusMinutes = (progress.totalFocusMinutes ?? 0) + totalTime;
+      const averageSessionDuration =
+        nextTotalSessions === 0
+          ? 0
+          : Math.round(totalFocusMinutes / nextTotalSessions);
+
+      return {
+        history: nextHistory,
+        progress: {
+          totalSessions: nextTotalSessions,
+          totalCompletedTasks,
+          averageSessionDuration,
+          lastActiveAt: new Date(),
+          totalFocusMinutes,
+        },
+        tasks: state.tasks.map((task) => {
+          if (!completedTaskIds.includes(task.id)) {
+            return task;
+          }
+          const completedAt = task.completedAt ?? new Date();
+          return {
+            ...task,
+            completed: true,
+            completedAt,
+            updatedAt: new Date(),
+          };
+        }),
+      };
+    });
+  },
+
+  filteredTasks: (maxDuration, priority) => {
+    const { tasks } = get();
+    return tasks
+      .filter((task) => {
+        if (task.completed) return false;
+        if (task.duration > maxDuration) return false;
+        if (priority && task.priority !== priority) return false;
+        return true;
+      })
+      .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  },
+
+  todayStats: () => {
+    const todayKey = new Date().toISOString().split('T')[0];
+    const { history } = get();
+    return history.find((item) => item.date === todayKey) ?? null;
+  },
+
+  reset: () => {
+    set(() => ({ ...createInitialState() }));
+  },
+}));
+
+export const resetTaskStore = () => {
+  const { reset } = useTaskStore.getState();
+  reset();
+};
+
+const debounce = <Args extends unknown[]>(fn: (...args: Args) => void, delay: number) => {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Args) => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+};
+
+const selectPersistableState = (state: TaskStore): PersistedAppState => ({
+  tasks: state.tasks,
+  history: state.history,
+  currentSession: state.currentSession,
+  settings: state.settings,
+  progress: state.progress,
+});
+
+if (typeof window !== 'undefined') {
+  const restored = loadAppState();
+  if (restored) {
+    useTaskStore.setState({
+      ...restored,
+    });
+  }
+
+  const persist = debounce((state: TaskStore) => {
+    saveAppState(selectPersistableState(state));
+  }, 500);
+
+  useTaskStore.subscribe((state) => {
+    persist(state);
+  });
+}

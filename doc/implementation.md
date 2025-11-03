@@ -47,12 +47,12 @@
 
 ### タスク
 
-#### 【 】1-1. 型定義作成（1時間）
+#### 【x】1-1. 型定義作成（1時間）
 - **Red**: 型定義のテスト
 - **Green**: Task, TimerSession, UserProgress, AppSettings 定義
 - **Refactor**: 型の共通化
 
-#### 【 】1-2. Zustand Store実装（3時間）
+#### 【x】1-2. Zustand Store実装（3時間）
 - **Red**: Store各アクションのテスト
   ```typescript
   test('should add task', () => {
@@ -67,7 +67,7 @@
   - recordSession
 - **Refactor**: 状態管理最適化
 
-#### 【 】1-3. LocalStorage統合（1時間）
+#### 【x】1-3. LocalStorage統合（1時間）
 - **Red**: 永続化テスト
 - **Green**: `lib/storage.ts` 実装
 - **Refactor**: デバウンス処理
