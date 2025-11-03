@@ -19,13 +19,13 @@
 
 ### タスク
 
-#### 【 】0-1. Next.jsプロジェクト初期化（30分）
+#### 【x】0-1. Next.jsプロジェクト初期化（30分）
 - `npx create-next-app@latest app025 --typescript --tailwind --app`
 - **Red**: 動作確認テスト
 - **Green**: プロジェクト起動確認
 - **Refactor**: 不要ファイル削除
 
-#### 【 】0-2. Jestセットアップ（1時間）
+#### 【x】0-2. Jestセットアップ（1時間）
 - **Red**: Jest設定ファイルのテスト
 - **Green**: Jest, @testing-library/react インストール
 - Web Worker モック設定
