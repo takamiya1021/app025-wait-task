@@ -1,5 +1,6 @@
 import { TimerDisplay, TimerSetup } from '@/app/components/timer';
 import { TaskForm, TaskList } from '@/app/components/tasks';
+import { PopupTaskPanel } from '@/app/components/popup';
 
 export default function Home() {
   return (
@@ -35,6 +36,8 @@ export default function Home() {
             <TaskList />
           </div>
         </section>
+
+        <PopupTaskPanel />
       </div>
     </main>
   );
