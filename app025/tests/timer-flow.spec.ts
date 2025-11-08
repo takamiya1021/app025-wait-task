@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test('タスク追加からタイマー開始までの基本フロー', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
+  await page.waitForSelector('form[aria-label="タスク追加フォーム"]');
 
   // タスクを追加
   await page.getByLabel('タスク名').fill('ストレッチ');
