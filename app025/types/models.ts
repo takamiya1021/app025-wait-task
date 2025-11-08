@@ -64,3 +64,19 @@ export interface TaskStatistics {
   activeTasks: number;
   highPriorityTasks: number;
 }
+
+export type TimerWorkerCommand =
+  | { type: 'START'; durationSeconds: number }
+  | { type: 'PAUSE' }
+  | { type: 'RESUME' }
+  | { type: 'STOP' }
+  | { type: 'TICK_REQUEST' };
+
+export type TimerWorkerResponse =
+  | { type: 'STARTED'; durationMs: number }
+  | { type: 'TICK'; remainingMs: number }
+  | { type: 'PAUSED'; remainingMs: number }
+  | { type: 'RESUMED'; remainingMs: number }
+  | { type: 'STOPPED' }
+  | { type: 'COMPLETE' }
+  | { type: 'ERROR'; message: string };

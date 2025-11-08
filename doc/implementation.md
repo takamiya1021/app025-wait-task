@@ -78,7 +78,7 @@
 
 ### タスク
 
-#### 【 】2-1. Web Worker実装（3時間）
+#### 【x】2-1. Web Worker実装（3時間）
 - **Red**: Web Workerテスト（モック）
 - **Green**: `workers/timer.worker.ts` 実装
   - Date.now()による精密計測
@@ -86,14 +86,14 @@
   - START/PAUSE/STOP制御
 - **Refactor**: 精度向上
 
-#### 【 】2-2. TimerEngineクラス実装（2時間）
+#### 【x】2-2. TimerEngineクラス実装（2時間）
 - **Red**: TimerEngineテスト
 - **Green**: `lib/timerEngine.ts` 実装
   - Worker統合
   - イベントハンドラー
 - **Refactor**: エラーハンドリング
 
-#### 【 】2-3. タイマー精度テスト（1時間）
+#### 【x】2-3. タイマー精度テスト（1時間）
 - **Red**: 精度計測テスト
 - **Green**: ±1秒以内達成確認
 - **Refactor**: 調整・最適化
