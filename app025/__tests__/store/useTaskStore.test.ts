@@ -1,5 +1,9 @@
-import { resetTaskStore, useTaskStore } from '@/store/useTaskStore';
+import { resetTaskStore, useTaskStore, __resetTimerIntegrationForTests } from '@/store/useTaskStore';
+import { setTimerDriver } from '@/lib/timerDriver';
 import type { TaskPriority } from '@/types/models';
+import { StubTimerDriver } from '@/tests/helpers/stubTimerDriver';
+
+let stubDriver: StubTimerDriver;
 
 const priorityOrder: Record<TaskPriority, number> = {
   high: 0,
@@ -9,7 +13,15 @@ const priorityOrder: Record<TaskPriority, number> = {
 
 describe('useTaskStore', () => {
   beforeEach(() => {
+    stubDriver = new StubTimerDriver();
+    setTimerDriver(stubDriver);
+    __resetTimerIntegrationForTests();
     resetTaskStore();
+  });
+
+  afterEach(() => {
+    setTimerDriver(null);
+    __resetTimerIntegrationForTests();
   });
 
   it('タスクを追加できる', () => {
@@ -75,35 +87,52 @@ describe('useTaskStore', () => {
 
     startTimer(5);
 
+    expect(stubDriver.startCalls).toEqual([5]);
+
     let session = useTaskStore.getState().currentSession;
     expect(session).not.toBeNull();
     expect(session?.isRunning).toBe(true);
     expect(session?.remainingTime).toBe(5 * 60);
 
     pauseTimer();
+    expect(stubDriver.pauseCalls).toBe(1);
 
     session = useTaskStore.getState().currentSession;
     expect(session?.isPaused).toBe(true);
 
     resumeTimer();
+    expect(stubDriver.resumeCalls).toBe(1);
 
     session = useTaskStore.getState().currentSession;
     expect(session?.isPaused).toBe(false);
 
     stopTimer();
+    expect(stubDriver.stopCalls).toBe(1);
 
     expect(useTaskStore.getState().currentSession).toBeNull();
   });
 
-  it('残り時間を更新できる', () => {
-    const { startTimer, updateRemainingTime } = useTaskStore.getState();
+  it('タイマードライバのTickで残り時間が更新される', () => {
+    const { startTimer } = useTaskStore.getState();
 
     startTimer(5);
 
-    updateRemainingTime(120);
+    stubDriver.emitTick(120);
 
     const session = useTaskStore.getState().currentSession;
     expect(session?.remainingTime).toBe(120);
+  });
+
+  it('タイマー完了でセッションが停止状態になる', () => {
+    const { startTimer } = useTaskStore.getState();
+
+    startTimer(1);
+
+    stubDriver.emitComplete();
+
+    const session = useTaskStore.getState().currentSession;
+    expect(session?.isRunning).toBe(false);
+    expect(session?.remainingTime).toBe(0);
   });
 
   it('セッション履歴を記録して当日統計を計算できる', () => {

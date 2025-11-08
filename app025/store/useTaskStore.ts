@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { loadAppState, saveAppState, type PersistedAppState } from '@/lib/storage';
+import { getTimerDriver, type TimerDriver } from '@/lib/timerDriver';
 import type {
   AppSettings,
   Task,
@@ -137,21 +138,27 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   startTimer: (durationMinutes) => {
+    const driver = ensureTimerDriver();
     const startTime = new Date();
+    const durationSeconds = Math.max(0, durationMinutes * 60);
     const session: TimerSession = {
       id: generateId(),
       startTime,
       duration: durationMinutes,
-      remainingTime: durationMinutes * 60,
+      remainingTime: durationSeconds,
       isRunning: true,
       isPaused: false,
       completedTasks: [],
     };
 
     set({ currentSession: session });
+    driver.start(durationMinutes);
   },
 
   pauseTimer: () => {
+    const driver = ensureTimerDriver();
+    driver.pause();
+
     set((state) => {
       if (!state.currentSession) {
         return {};
@@ -168,6 +175,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   resumeTimer: () => {
+    const driver = ensureTimerDriver();
+    driver.resume();
+
     set((state) => {
       if (!state.currentSession) {
         return {};
@@ -184,6 +194,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   stopTimer: () => {
+    const driver = ensureTimerDriver();
+    driver.stop();
     set({ currentSession: null });
   },
 
@@ -307,6 +319,72 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 export const resetTaskStore = () => {
   const { reset } = useTaskStore.getState();
   reset();
+};
+
+let connectedDriver: TimerDriver | null = null;
+let detachTick: (() => void) | null = null;
+let detachComplete: (() => void) | null = null;
+
+function ensureTimerDriver(): TimerDriver {
+  const driver = getTimerDriver();
+  if (driver !== connectedDriver) {
+    if (detachTick) {
+      detachTick();
+      detachTick = null;
+    }
+    if (detachComplete) {
+      detachComplete();
+      detachComplete = null;
+    }
+
+    detachTick = driver.onTick((remainingSeconds) => {
+      useTaskStore.setState((state) => {
+        if (!state.currentSession) {
+          return state;
+        }
+
+        return {
+          currentSession: {
+            ...state.currentSession,
+            remainingTime: Math.max(0, remainingSeconds),
+          },
+        };
+      });
+    });
+
+    detachComplete = driver.onComplete(() => {
+      useTaskStore.setState((state) => {
+        if (!state.currentSession) {
+          return state;
+        }
+
+        return {
+          currentSession: {
+            ...state.currentSession,
+            isRunning: false,
+            isPaused: false,
+            remainingTime: 0,
+          },
+        };
+      });
+    });
+
+    connectedDriver = driver;
+  }
+
+  return driver;
+}
+
+export const __resetTimerIntegrationForTests = () => {
+  if (detachTick) {
+    detachTick();
+    detachTick = null;
+  }
+  if (detachComplete) {
+    detachComplete();
+    detachComplete = null;
+  }
+  connectedDriver = null;
 };
 
 const debounce = <Args extends unknown[]>(fn: (...args: Args) => void, delay: number) => {
