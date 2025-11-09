@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
+import { ProgressBar } from '@/app/components/progress';
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
@@ -41,14 +42,14 @@ export function TimerDisplay() {
         <p className="text-5xl font-bold tracking-tight">{formatTime(remainingTime)}</p>
       </div>
       {duration ? (
-        <progress
-          className="h-2 w-full overflow-hidden rounded-full bg-slate-800"
+        <ProgressBar
           value={Math.max(0, duration * 60 - remainingTime)}
           max={duration * 60}
-          aria-label="タイマー進捗"
+          label="タイマー進捗"
+          className="mt-2"
         />
       ) : (
-        <div className="h-2 w-full rounded-full bg-slate-800" aria-label="タイマー未開始" />
+        <div className="mt-2 h-2 w-full rounded-full bg-slate-800" aria-label="タイマー未開始" />
       )}
     </section>
   );

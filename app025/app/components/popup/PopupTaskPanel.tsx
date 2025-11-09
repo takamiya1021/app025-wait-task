@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
+import { PopupWindow } from '@/app/components/popup/PopupWindow';
+import { ProgressBar } from '@/app/components/progress';
 
 const priorityLabels = {
   all: 'すべて',
@@ -15,6 +17,7 @@ type PriorityFilter = keyof typeof priorityLabels;
 export function PopupTaskPanel() {
   const currentSession = useTaskStore(state => state.currentSession);
   const filterByDuration = useTaskStore(state => state.filteredTasks);
+  const alwaysOnTopSetting = useTaskStore(state => state.settings.alwaysOnTop);
   const [isOpen, setIsOpen] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
 
@@ -39,12 +42,10 @@ export function PopupTaskPanel() {
   }
 
   return (
-    <div
-      className={`fixed right-6 bottom-6 z-50 w-full max-w-sm rounded-3xl border border-slate-200 bg-white shadow-xl transition-opacity ${
-        isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
-      }`}
-      aria-live="polite"
-      aria-label="タイマーポップアップ"
+    <PopupWindow
+      isOpen={isOpen}
+      alwaysOnTop={alwaysOnTopSetting}
+      ariaLabel="タイマーポップアップ"
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
         <div>
@@ -62,6 +63,11 @@ export function PopupTaskPanel() {
       </div>
       {isOpen && (
         <div className="flex flex-col gap-4 px-5 py-4">
+          <ProgressBar
+            value={Math.max(0, currentSession.duration * 60 - currentSession.remainingTime)}
+            max={currentSession.duration * 60}
+            label="ポップアップ進捗"
+          />
           <div className="flex items-center gap-2">
             <span className="text-sm text-slate-500">優先度</span>
             <div className="flex gap-2">
@@ -96,6 +102,6 @@ export function PopupTaskPanel() {
           </ul>
         </div>
       )}
-    </div>
+    </PopupWindow>
   );
 }

@@ -46,7 +46,7 @@ const priorityOrder: Record<TaskPriority, number> = {
 
 const defaultSettings: AppSettings = {
   notificationSound: true,
-  alwaysOnTop: false,
+  alwaysOnTop: true,
   defaultDuration: 5,
   popupWidth: 400,
   popupHeight: 600,

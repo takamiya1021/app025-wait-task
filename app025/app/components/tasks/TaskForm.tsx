@@ -34,6 +34,7 @@ export function TaskForm() {
       className="flex w-full flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm"
       onSubmit={handleSubmit}
       aria-label="タスク追加フォーム"
+      data-testid="task-form"
     >
       <div>
         <label htmlFor="task-title" className="text-sm font-semibold text-slate-700">

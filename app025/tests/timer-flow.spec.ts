@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 test('タスク追加からタイマー開始までの基本フロー', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
-  await page.waitForSelector('form[aria-label="タスク追加フォーム"]');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('[data-testid="task-form"]');
 
   // タスクを追加
   await page.getByLabel('タスク名').fill('ストレッチ');
@@ -18,4 +19,9 @@ test('タスク追加からタイマー開始までの基本フロー', async ({
 
   // ポップアップでタスクが提示される
   await expect(page.getByLabel('タイマーポップアップ')).toBeVisible();
+  const zIndex = await page.$eval('[aria-label="タイマーポップアップ"]', el =>
+    window.getComputedStyle(el).zIndex,
+  );
+  const parsed = zIndex === 'auto' ? 0 : Number(zIndex);
+  expect(parsed).toBeGreaterThanOrEqual(9999);
 });

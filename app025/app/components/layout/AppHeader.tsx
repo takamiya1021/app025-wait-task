@@ -10,7 +10,10 @@ export function AppHeader() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">
             Rendering Wait Helper
           </p>
-          <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1
+            data-testid="landing-heading"
+            className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl"
+          >
             待ち時間をタスク完了タイムに変える相棒
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-200">
