@@ -258,10 +258,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
           ...existing,
           totalTime: existing.totalTime + totalTime,
           completedTasks: existing.completedTasks + completedTasks.length,
-          tasksByCategory: {
-            ...existing.tasksByCategory,
-            ...tasksByCategory,
-          },
+          tasksByCategory: Object.entries(tasksByCategory).reduce((acc, [category, count]) => {
+            acc[category] = (existing.tasksByCategory[category] || 0) + count;
+            return acc;
+          }, { ...existing.tasksByCategory }),
         };
       } else {
         nextHistory.push({
