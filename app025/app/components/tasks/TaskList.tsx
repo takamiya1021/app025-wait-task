@@ -2,16 +2,20 @@
 
 import { useMemo } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
+import { filterTasksByDuration } from '@/app/lib/taskUtils';
 
 export function TaskList() {
-  const tasks = useTaskStore(state => state.tasks);
+  const filters = useTaskStore(state => state.filters);
   const toggleTaskCompletion = useTaskStore(state => state.toggleTaskCompletion);
   const removeTask = useTaskStore(state => state.removeTask);
+  const tasks = useTaskStore(state => state.tasks);
 
   const sortedTasks = useMemo(() => {
+    const selectedPriority = filters.priority === 'all' ? undefined : filters.priority;
+    const filtered = filterTasksByDuration(tasks, filters.maxDuration, selectedPriority);
     const priorityOrder = { high: 0, medium: 1, low: 2 } as const;
-    return [...tasks].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-  }, [tasks]);
+    return [...filtered].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  }, [tasks, filters]);
 
   if (sortedTasks.length === 0) {
     return (

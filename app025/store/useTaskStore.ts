@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { loadAppState, saveAppState, type PersistedAppState } from '@/lib/storage';
 import { getTimerDriver, type TimerDriver } from '@/lib/timerDriver';
 import { handleTimerCompletionNotification } from '@/app/lib/notificationManager';
+import { filterTasksByDuration } from '@/app/lib/taskUtils';
 import type {
   AppSettings,
   Task,
@@ -19,6 +20,10 @@ interface TaskStoreState {
   history: TaskHistory[];
   settings: AppSettings;
   progress: UserProgress;
+  filters: {
+    maxDuration: number;
+    priority: TaskPriority | 'all';
+  };
 }
 
 interface TaskStoreActions {
@@ -36,6 +41,7 @@ interface TaskStoreActions {
   todayStats: () => TaskHistory | null;
   reset: () => void;
   updateSettings: (updates: Partial<AppSettings>) => void;
+  updateFilters: (updates: Partial<TaskStoreState['filters']>) => void;
 }
 
 export type TaskStore = TaskStoreState & TaskStoreActions;
@@ -66,6 +72,10 @@ const createInitialState = (): TaskStoreState => ({
     averageSessionDuration: 0,
     lastActiveAt: undefined,
     totalFocusMinutes: 0,
+  },
+  filters: {
+    maxDuration: 10,
+    priority: 'all',
   },
 });
 
@@ -297,14 +307,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   filteredTasks: (maxDuration, priority) => {
     const { tasks } = get();
-    return tasks
-      .filter((task) => {
-        if (task.completed) return false;
-        if (task.duration > maxDuration) return false;
-        if (priority && task.priority !== priority) return false;
-        return true;
-      })
-      .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+    return filterTasksByDuration(tasks, maxDuration, priority);
   },
 
   todayStats: () => {
@@ -317,6 +320,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     set((state) => ({
       settings: {
         ...state.settings,
+        ...updates,
+      },
+    }));
+  },
+
+  updateFilters: (updates) => {
+    set((state) => ({
+      filters: {
+        ...state.filters,
         ...updates,
       },
     }));
