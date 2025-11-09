@@ -175,7 +175,7 @@
 
 ### タスク
 
-#### 【 】6-1. 通知許可リクエスト（1時間）
+#### 【x】6-1. 通知許可リクエスト（1時間）
 - **Red**: 許可リクエストテスト
 - **Green**: `lib/notificationService.ts` 実装
   ```typescript
@@ -183,12 +183,12 @@
   ```
 - **Refactor**: エラーハンドリング
 
-#### 【 】6-2. 通知送信機能（2時間）
+#### 【x】6-2. 通知送信機能（2時間）
 - **Red**: 通知送信テスト
 - **Green**: notify 関数実装、音声通知追加
 - **Refactor**: 通知内容最適化
 
-#### 【 】6-3. NotificationManagerコンポーネント（1時間）
+#### 【x】6-3. NotificationManagerコンポーネント（1時間）
 - **Red**: 通知管理UIテスト
 - **Green**: 設定画面実装
 - **Refactor**: UX改善

@@ -1,5 +1,6 @@
 import { resetTaskStore, useTaskStore, __resetTimerIntegrationForTests } from '@/store/useTaskStore';
 import { setTimerDriver } from '@/lib/timerDriver';
+import { handleTimerCompletionNotification } from '@/app/lib/notificationManager';
 import type { TaskPriority } from '@/types/models';
 import { StubTimerDriver } from '@/tests/helpers/stubTimerDriver';
 
@@ -133,6 +134,16 @@ describe('useTaskStore', () => {
     const session = useTaskStore.getState().currentSession;
     expect(session?.isRunning).toBe(false);
     expect(session?.remainingTime).toBe(0);
+    expect(handleTimerCompletionNotification).toHaveBeenCalled();
+  });
+
+  it('設定を更新できる', () => {
+    const { updateSettings } = useTaskStore.getState();
+    expect(useTaskStore.getState().settings.notificationSound).toBe(true);
+
+    updateSettings({ notificationSound: false });
+
+    expect(useTaskStore.getState().settings.notificationSound).toBe(false);
   });
 
   it('セッション履歴を記録して当日統計を計算できる', () => {
@@ -178,3 +189,6 @@ describe('useTaskStore', () => {
     expect(priorityOrder[first.priority]).toBeLessThanOrEqual(priorityOrder[second.priority]);
   });
 });
+jest.mock('@/app/lib/notificationManager', () => ({
+  handleTimerCompletionNotification: jest.fn(),
+}));

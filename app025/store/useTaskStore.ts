@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { loadAppState, saveAppState, type PersistedAppState } from '@/lib/storage';
 import { getTimerDriver, type TimerDriver } from '@/lib/timerDriver';
+import { handleTimerCompletionNotification } from '@/app/lib/notificationManager';
 import type {
   AppSettings,
   Task,
@@ -34,6 +35,7 @@ interface TaskStoreActions {
   filteredTasks: (maxDuration: number, priority?: TaskPriority) => Task[];
   todayStats: () => TaskHistory | null;
   reset: () => void;
+  updateSettings: (updates: Partial<AppSettings>) => void;
 }
 
 export type TaskStore = TaskStoreState & TaskStoreActions;
@@ -311,6 +313,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     return history.find((item) => item.date === todayKey) ?? null;
   },
 
+  updateSettings: (updates) => {
+    set((state) => ({
+      settings: {
+        ...state.settings,
+        ...updates,
+      },
+    }));
+  },
+
   reset: () => {
     set(() => ({ ...createInitialState() }));
   },
@@ -367,6 +378,8 @@ function ensureTimerDriver(): TimerDriver {
           },
         };
       });
+
+      triggerTimerCompletionEffects();
     });
 
     connectedDriver = driver;
@@ -374,6 +387,15 @@ function ensureTimerDriver(): TimerDriver {
 
   return driver;
 }
+
+const triggerTimerCompletionEffects = () => {
+  if (typeof window === 'undefined') return;
+  const { settings } = useTaskStore.getState();
+  handleTimerCompletionNotification({
+    enableSound: settings.notificationSound,
+    message: 'チェックリストから次のタスクを選びましょう',
+  });
+};
 
 export const __resetTimerIntegrationForTests = () => {
   if (detachTick) {
