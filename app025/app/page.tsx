@@ -4,6 +4,7 @@ import { PopupTaskPanel } from '@/app/components/popup';
 import { AppHeader } from '@/app/components/layout';
 import { StatisticsPanel } from '@/app/components/stats';
 import { SettingsPanel } from '@/app/components/settings';
+import { AITaskSuggestion } from '@/app/components/ai';
 
 export default function Home() {
   return (
@@ -33,6 +34,7 @@ export default function Home() {
         </section>
 
         <StatisticsPanel />
+        <AITaskSuggestion />
         <SettingsPanel />
 
         <PopupTaskPanel />

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
+import { classifyTaskWithAI } from '@/app/lib/geminiService';
 
 const PRIORITY_LABELS = {
   high: '高優先',
@@ -11,9 +12,12 @@ const PRIORITY_LABELS = {
 
 export function TaskForm() {
   const addTask = useTaskStore(state => state.addTask);
+  const settings = useTaskStore(state => state.settings);
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState(3);
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [classifying, setClassifying] = useState(false);
+  const [classificationMessage, setClassificationMessage] = useState<string | null>(null);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -88,12 +92,36 @@ export function TaskForm() {
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="rounded-full bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
-      >
-        タスクを追加
-      </button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          type="submit"
+          className="rounded-full bg-slate-900 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+        >
+          タスクを追加
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            if (!title.trim()) return;
+            setClassifying(true);
+            const result = await classifyTaskWithAI({
+              title,
+              apiKey: settings.geminiApiKey,
+            });
+            setDuration(result.duration);
+            setPriority(result.priority);
+            setClassificationMessage(`${result.category} / 約${result.duration}分 / ${result.priority.toUpperCase()}`);
+            setClassifying(false);
+          }}
+          disabled={classifying}
+          className="rounded-full border border-slate-200 px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+        >
+          {classifying ? '推定中…' : 'AIで分類'}
+        </button>
+      </div>
+      {classificationMessage && (
+        <p className="text-sm text-slate-500">AI提案: {classificationMessage}</p>
+      )}
     </form>
   );
 }
