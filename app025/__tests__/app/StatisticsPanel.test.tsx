@@ -1,6 +1,13 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { StatisticsPanel } from '@/app/components/stats/StatisticsPanel';
 import { resetTaskStore, useTaskStore } from '@/store/useTaskStore';
+
+jest.mock('@/app/lib/geminiService', () => ({
+  analyzeProductivityWithAI: jest.fn(async () => ({
+    summary: 'AIまとめ',
+    tips: ['tip1', 'tip2'],
+  })),
+}));
 
 describe('StatisticsPanel', () => {
   beforeEach(() => {
@@ -21,5 +28,12 @@ describe('StatisticsPanel', () => {
     expect(screen.getByText('今日の完了タスク')).toBeInTheDocument();
     expect(screen.getAllByText('2件')).toHaveLength(2);
     expect(screen.getAllByText('6分')).toHaveLength(2);
+  });
+
+  it('AIアドバイスを取得できる', async () => {
+    render(<StatisticsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: 'AIに分析してもらう' }));
+
+    expect(await screen.findByTestId('ai-analysis')).toHaveTextContent('AIまとめ');
   });
 });

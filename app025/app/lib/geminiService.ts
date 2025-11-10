@@ -16,6 +16,11 @@ export interface ClassificationResult {
   priority: TaskPriority;
 }
 
+export interface ProductivityAnalysis {
+  summary: string;
+  tips: string[];
+}
+
 const buildSuggestionPrompt = (availableMinutes: number, tasks: Task[]) => `待ち時間: ${availableMinutes}分
 
 既存タスク:
@@ -99,6 +104,11 @@ const fallbackClassification = (title: string): ClassificationResult => {
   return { category: 'chore', duration: 5, priority: 'medium' };
 };
 
+const fallbackProductivityAnalysis = (): ProductivityAnalysis => ({
+  summary: 'この1週間も着実にハンドルできています。短い待ち時間でも継続して使えている点がGoodです。',
+  tips: ['1〜3分タスクをもう1件追加し、直前の待ち時間にも着手できるようにしましょう。', '完了ログを週末に振り返ると改善が見つけやすいです。'],
+});
+
 export async function suggestTasksWithAI(params: {
   availableMinutes: number;
   tasks: Task[];
@@ -148,5 +158,37 @@ export async function classifyTaskWithAI(params: {
   } catch (error) {
     console.warn('Failed to parse classification result', error);
     return fallbackClassification(title);
+  }
+}
+
+export async function analyzeProductivityWithAI(params: {
+  history: { date: string; totalTime: number; completedTasks: number }[];
+  apiKey?: string;
+}): Promise<ProductivityAnalysis> {
+  const { history, apiKey } = params;
+  if (history.length === 0) {
+    return fallbackProductivityAnalysis();
+  }
+  const prompt = `タスク完了履歴:
+${history.map((h) => `${h.date}: ${h.completedTasks}件, ${h.totalTime}分`).join('\n')}
+
+この履歴から以下を分析してください。
+1. 隙間時間の活用状況を短くまとめる
+2. 改善のヒントを箇条書きで2点。
+JSONで {"summary":"","tips":["",""]} の形式で返してください。`;
+
+  const raw = await callGemini(prompt, apiKey);
+  if (!raw) {
+    return fallbackProductivityAnalysis();
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      summary: parsed.summary ?? fallbackProductivityAnalysis().summary,
+      tips: Array.isArray(parsed.tips) && parsed.tips.length > 0 ? parsed.tips : fallbackProductivityAnalysis().tips,
+    };
+  } catch (error) {
+    console.warn('Failed to parse productivity analysis', error);
+    return fallbackProductivityAnalysis();
   }
 }

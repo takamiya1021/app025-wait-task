@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
+import { analyzeProductivityWithAI } from '@/app/lib/geminiService';
 
 const formatMinutes = (minutes: number) => `${minutes}分`;
 
@@ -10,6 +11,7 @@ const todayKey = () => new Date().toISOString().split('T')[0];
 export function StatisticsPanel() {
   const history = useTaskStore(state => state.history);
   const todayStats = useTaskStore(state => state.todayStats());
+  const settings = useTaskStore(state => state.settings);
 
   const { weeklyMinutes, weeklyCompleted } = useMemo(() => {
     const now = new Date(todayKey());
@@ -31,6 +33,17 @@ export function StatisticsPanel() {
 
   const todayMinutes = todayStats?.totalTime ?? 0;
   const todayCompleted = todayStats?.completedTasks ?? 0;
+
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [tips, setTips] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const handleAnalysis = async () => {
+    setAiLoading(true);
+    const result = await analyzeProductivityWithAI({ history, apiKey: settings.geminiApiKey });
+    setAnalysis(result.summary);
+    setTips(result.tips ?? []);
+    setAiLoading(false);
+  };
 
   const cards = [
     {
@@ -70,6 +83,32 @@ export function StatisticsPanel() {
             <p className="text-sm text-slate-500">{card.detail}</p>
           </article>
         ))}
+      </div>
+      <div className="mt-6 rounded-2xl border border-slate-100 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">AIアドバイス</p>
+            <p className="text-sm text-slate-500">Gemini が活用状況を要約します</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAnalysis}
+            disabled={aiLoading}
+            className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200"
+          >
+            {aiLoading ? '分析中…' : 'AIに分析してもらう'}
+          </button>
+        </div>
+        {analysis && (
+          <div className="mt-3 text-sm text-slate-700" data-testid="ai-analysis">
+            <p>{analysis}</p>
+            <ul className="mt-2 list-disc pl-5 text-slate-600">
+              {tips.map((tip) => (
+                <li key={tip}>{tip}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   );
