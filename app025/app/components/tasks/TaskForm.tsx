@@ -18,19 +18,30 @@ export function TaskForm() {
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [classifying, setClassifying] = useState(false);
   const [classificationMessage, setClassificationMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = title.trim();
-    if (!trimmed) return;
+    const sanitized = trimmed.replace(/<[^>]*>/g, '').trim();
+    if (!sanitized) {
+      setErrorMessage('タスク名を入力してください');
+      return;
+    }
+    if (duration < 1 || duration > 60) {
+      setErrorMessage('所要時間は1〜60分で指定してください');
+      return;
+    }
+    setErrorMessage(null);
 
     addTask({
-      title: trimmed,
+      title: sanitized,
       duration,
       priority,
       completed: false,
     });
     setTitle('');
+    setClassificationMessage(null);
   };
 
   return (
@@ -104,16 +115,17 @@ export function TaskForm() {
           onClick={async () => {
             if (!title.trim()) return;
             setClassifying(true);
+            setErrorMessage(null);
             const result = await classifyTaskWithAI({
               title,
               apiKey: settings.geminiApiKey,
             });
-            setDuration(result.duration);
+            setDuration(Math.min(60, Math.max(1, result.duration)));
             setPriority(result.priority);
             setClassificationMessage(`${result.category} / 約${result.duration}分 / ${result.priority.toUpperCase()}`);
             setClassifying(false);
           }}
-          disabled={classifying}
+          disabled={classifying || !title.trim()}
           className="rounded-full border border-slate-200 px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
         >
           {classifying ? '推定中…' : 'AIで分類'}
@@ -122,6 +134,7 @@ export function TaskForm() {
       {classificationMessage && (
         <p className="text-sm text-slate-500">AI提案: {classificationMessage}</p>
       )}
+      {errorMessage && <p className="text-sm text-rose-600">{errorMessage}</p>}
     </form>
   );
 }

@@ -84,6 +84,25 @@ describe('TimerEngine (worker mode)', () => {
 
     engine.dispose();
   });
+
+  it('workerエラー時にフォールバックへ切り替える', () => {
+    jest.useFakeTimers();
+    const worker = new MockWorker();
+    const engine = new TimerEngine({ workerFactory: () => worker });
+    const tickSpy = jest.fn();
+    engine.onTick(tickSpy);
+
+    engine.start(0.2);
+    worker.emit({ type: 'STARTED', durationMs: 12000 });
+    worker.emitError('boom');
+
+    engine.start(0.1);
+    jest.advanceTimersByTime(200);
+    expect(tickSpy).toHaveBeenCalled();
+
+    engine.dispose();
+    jest.useRealTimers();
+  });
 });
 
 describe('TimerEngine (fallback mode)', () => {
