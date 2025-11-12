@@ -11,7 +11,7 @@
 - ✅ 要件定義書の全機能が実装済み
 
 ## 工数見積もり合計
-**約45時間**（TDD対応分を含む）
+**約50時間**（TDD対応分を含む）
 
 ---
 
@@ -308,6 +308,49 @@
 
 ---
 
+## Phase 12: PWA（Progressive Web App）実装（予定工数: 5時間）
+
+### タスク
+
+#### 【 】12-1. manifest.json作成（1時間）
+- **Red**: manifest読み込みテスト
+- **Green**: `public/manifest.json` 作成
+  - アプリ名、説明、アイコン設定
+  - display: "standalone"
+  - theme_color, background_color設定
+- **Refactor**: メタデータ最適化
+
+#### 【 】12-2. アイコン生成（30分）
+- **Red**: アイコン読み込みテスト
+- **Green**: 各サイズのアイコン作成
+  - 192x192, 512x512 PNG
+  - favicon.ico更新
+- **Refactor**: 画像最適化
+
+#### 【 】12-3. Service Worker実装（2時間）
+- **Red**: Service Workerテスト
+- **Green**: `public/sw.js` 実装
+  - キャッシュ戦略（Cache First for static assets）
+  - Network First for API calls
+  - オフライン時のフォールバック
+- **Refactor**: キャッシュ管理最適化
+
+#### 【 】12-4. Next.js PWA統合（1時間）
+- **Red**: PWA機能テスト
+- **Green**: `next.config.ts` にPWA設定追加
+  - next-pwa導入（またはカスタムSW登録）
+  - metadata設定
+- **Refactor**: ビルド最適化
+
+#### 【 】12-5. インストール可能性確認（30分）
+- **Red**: インストールプロンプト表示テスト
+- **Green**: Chrome DevToolsでPWAチェック
+  - Lighthouseスコア確認
+  - インストール動作確認
+- **Refactor**: PWAスコア改善
+
+---
+
 ## マイルストーン
 
 ### M1: 基本機能実装完了（Phase 0-5）
@@ -326,6 +369,10 @@
 - 期限: 開始から4週間
 - 完了条件: 全テストパス、タイマー精度達成
 
+### M5: PWA実装完了（Phase 12）
+- 期限: 開始から5週間
+- 完了条件: PWA対応、オフライン動作、インストール可能
+
 ---
 
 ## リスク管理
@@ -335,6 +382,10 @@
    - 対策: Web Worker使用、Date.now()計測
 2. **通知許可**: ユーザーが許可しない可能性
    - 対策: 音声通知フォールバック
+3. **PWAインストール可能性**: ブラウザ・環境により動作が異なる
+   - 対策: Chrome DevToolsで検証、Lighthouseスコア確認
+4. **Service Workerキャッシュ**: 古いキャッシュが残る問題
+   - 対策: バージョン管理、キャッシュクリア機能実装
 
 ---
 
@@ -345,3 +396,11 @@
 - [ ] ポップアップが邪魔にならない
 - [ ] 通知が確実に表示される
 - [ ] AI提案が役立つ
+
+### PWA品質
+- [ ] manifest.jsonが正しく読み込まれる
+- [ ] インストールプロンプトが表示される
+- [ ] オフライン時にも基本機能が動作する
+- [ ] Lighthouseスコア: PWA 90点以上
+- [ ] アイコンが正しく表示される
+- [ ] Service Workerが正常に動作する
