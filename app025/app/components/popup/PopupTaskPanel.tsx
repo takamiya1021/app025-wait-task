@@ -38,6 +38,7 @@ export function PopupTaskPanel() {
   const currentSession = useTaskStore(state => state.currentSession);
   const filterByDuration = useTaskStore(state => state.filteredTasks);
   const alwaysOnTopSetting = useTaskStore(state => state.settings.alwaysOnTop);
+  const stopTimer = useTaskStore(state => state.stopTimer);
   const [isOpen, setIsOpen] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
 
@@ -73,14 +74,24 @@ export function PopupTaskPanel() {
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">待ち時間タスク</p>
           <p className="text-lg font-bold text-slate-900">残り {remainingMinutes} 分</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500"
-          aria-pressed={isOpen}
-        >
-          {isOpen ? '最小化' : '展開' }
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={stopTimer}
+            className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors"
+            aria-label="タイマーを停止"
+          >
+            停止
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors"
+            aria-pressed={isOpen}
+          >
+            {isOpen ? '最小化' : '展開' }
+          </button>
+        </div>
       </div>
       {isOpen && (
         <div className="flex flex-col gap-4 px-5 py-4">
