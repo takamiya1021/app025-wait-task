@@ -64,7 +64,7 @@ export function TaskForm() {
           type="text"
           value={title}
           onChange={event => setTitle(event.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-base focus:border-slate-500 focus:outline-none"
+          className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
           placeholder="例: 受信トレイ整理"
         />
       </div>
@@ -81,7 +81,7 @@ export function TaskForm() {
             max={30}
             value={duration}
             onChange={event => setDuration(Number(event.target.value))}
-            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-base focus:border-slate-500 focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-base text-slate-900 focus:border-slate-500 focus:outline-none"
           />
         </div>
         <div>
