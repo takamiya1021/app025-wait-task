@@ -51,6 +51,10 @@ export function TaskForm() {
       aria-label="タスク追加フォーム"
       data-testid="task-form"
     >
+      <header className="mb-2">
+        <p className="text-sm font-semibold text-slate-500">STEP 2</p>
+        <h2 className="text-2xl font-bold text-slate-900">タスクを追加</h2>
+      </header>
       <div>
         <label htmlFor="task-title" className="text-sm font-semibold text-slate-700">
           タスク名

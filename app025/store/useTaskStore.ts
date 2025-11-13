@@ -24,6 +24,7 @@ interface TaskStoreState {
     maxDuration: number;
     priority: TaskPriority | 'all';
   };
+  timerDuration: number; // 現在設定されているタイマー時間（分）
 }
 
 interface TaskStoreActions {
@@ -42,6 +43,7 @@ interface TaskStoreActions {
   reset: () => void;
   updateSettings: (updates: Partial<AppSettings>) => void;
   updateFilters: (updates: Partial<TaskStoreState['filters']>) => void;
+  setTimerDuration: (minutes: number) => void;
 }
 
 export type TaskStore = TaskStoreState & TaskStoreActions;
@@ -59,6 +61,7 @@ const defaultSettings: AppSettings = {
   popupWidth: 400,
   popupHeight: 600,
   theme: 'system',
+  geminiApiKey: undefined,
 };
 
 const createInitialState = (): TaskStoreState => ({
@@ -77,6 +80,7 @@ const createInitialState = (): TaskStoreState => ({
     maxDuration: 10,
     priority: 'all',
   },
+  timerDuration: defaultSettings.defaultDuration,
 });
 
 const generateId = (): string => {
@@ -131,14 +135,20 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   toggleTaskCompletion: (id) => {
+    const state = get();
+    const task = state.tasks.find((t) => t.id === id);
+
+    if (!task) return;
+
+    const nextCompleted = !task.completed;
     const now = new Date();
+
     set((state) => ({
       tasks: state.tasks.map((task) => {
         if (task.id !== id) {
           return task;
         }
 
-        const nextCompleted = !task.completed;
         return {
           ...task,
           completed: nextCompleted,
@@ -147,6 +157,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         };
       }),
     }));
+
+    // 完了状態にした場合のみ統計に記録
+    if (nextCompleted) {
+      get().recordSession([id]);
+    }
   },
 
   startTimer: (durationMinutes) => {
@@ -332,6 +347,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         ...updates,
       },
     }));
+  },
+
+  setTimerDuration: (minutes) => {
+    set(() => ({ timerDuration: minutes }));
   },
 
   reset: () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
 import { analyzeProductivityWithAI } from '@/app/lib/geminiService';
 
@@ -9,11 +9,18 @@ const formatMinutes = (minutes: number) => `${minutes}分`;
 const todayKey = () => new Date().toISOString().split('T')[0];
 
 export function StatisticsPanel() {
+  const [mounted, setMounted] = useState(false);
   const history = useTaskStore(state => state.history);
   const todayStats = useTaskStore(state => state.todayStats());
   const settings = useTaskStore(state => state.settings);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { weeklyMinutes, weeklyCompleted } = useMemo(() => {
+    if (!mounted) return { weeklyMinutes: 0, weeklyCompleted: 0 };
+
     const now = new Date(todayKey());
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
@@ -29,10 +36,10 @@ export function StatisticsPanel() {
     });
 
     return { weeklyMinutes: totalMinutes, weeklyCompleted: completed };
-  }, [history]);
+  }, [history, mounted]);
 
-  const todayMinutes = todayStats?.totalTime ?? 0;
-  const todayCompleted = todayStats?.completedTasks ?? 0;
+  const todayMinutes = mounted ? (todayStats?.totalTime ?? 0) : 0;
+  const todayCompleted = mounted ? (todayStats?.completedTasks ?? 0) : 0;
 
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [tips, setTips] = useState<string[]>([]);
@@ -45,11 +52,11 @@ export function StatisticsPanel() {
     setAiLoading(false);
   };
 
-  const cards = [
+  const cards = useMemo(() => [
     {
       label: '今日の完了タスク',
       value: `${todayCompleted}件`,
-      detail: todayStats ? `更新: ${todayStats.date}` : 'まだ完了なし',
+      detail: mounted && todayStats ? `更新: ${todayStats.date}` : 'まだ完了なし',
     },
     {
       label: '今日の隙間時間活用',
@@ -66,12 +73,12 @@ export function StatisticsPanel() {
       value: formatMinutes(weeklyMinutes),
       detail: '週間合計',
     },
-  ];
+  ], [mounted, todayCompleted, todayStats, todayMinutes, weeklyCompleted, weeklyMinutes]);
 
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm" aria-label="利用統計">
       <header className="mb-4 flex flex-col gap-1">
-        <p className="text-sm font-semibold text-slate-500">STEP 4</p>
+        <p className="text-sm font-semibold text-slate-500">STEP 5</p>
         <h2 className="text-2xl font-bold text-slate-900">利用状況サマリー</h2>
         <p className="text-sm text-slate-500">今日と直近1週間の成果をチェック</p>
       </header>

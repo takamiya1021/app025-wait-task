@@ -5,6 +5,25 @@ import { useTaskStore } from '@/store/useTaskStore';
 import { PopupWindow } from '@/app/components/popup/PopupWindow';
 import { ProgressBar } from '@/app/components/progress';
 
+// デスクトップかどうかを判定するカスタムフック
+function useIsDesktop() {
+  const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    setIsDesktop(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // マウント前はサーバーと同じ状態（false）を返す
+  return mounted ? isDesktop : false;
+}
+
 const priorityLabels = {
   all: 'すべて',
   high: '高',
@@ -15,6 +34,7 @@ const priorityLabels = {
 type PriorityFilter = keyof typeof priorityLabels;
 
 export function PopupTaskPanel() {
+  const isDesktop = useIsDesktop();
   const currentSession = useTaskStore(state => state.currentSession);
   const filterByDuration = useTaskStore(state => state.filteredTasks);
   const alwaysOnTopSetting = useTaskStore(state => state.settings.alwaysOnTop);
@@ -37,7 +57,8 @@ export function PopupTaskPanel() {
     return filterByDuration(Math.max(1, remainingMinutes), priority);
   }, [currentSession, priorityFilter, filterByDuration, remainingMinutes]);
 
-  if (!currentSession) {
+  // デスクトップまたはセッションがない場合は表示しない
+  if (isDesktop || !currentSession) {
     return null;
   }
 

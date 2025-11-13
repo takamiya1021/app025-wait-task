@@ -20,8 +20,8 @@ export function TaskFilter() {
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm" aria-label="タスクフィルター">
       <header className="mb-4">
-        <p className="text-sm font-semibold text-slate-500">STEP 3.5</p>
-        <h2 className="text-2xl font-bold text-slate-900">タスクフィルター</h2>
+        <p className="text-sm font-semibold text-slate-500">STEP 3</p>
+        <h2 className="text-2xl font-bold text-slate-900">タスク絞り込み</h2>
         <p className="text-sm text-slate-500">ぴったりのタスクだけ表示できます（現在 {visibleCount} 件）</p>
       </header>
       <div className="flex flex-col gap-4">

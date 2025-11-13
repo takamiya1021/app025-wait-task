@@ -13,7 +13,7 @@ export function filterTasksByDuration(
 ): Task[] {
   return tasks
     .filter((task) => {
-      if (task.completed) return false;
+      // 完了タスクも表示する（グレーアウトはUIで制御）
       if (task.duration > maxDuration) return false;
       if (priority && task.priority !== priority) return false;
       return true;

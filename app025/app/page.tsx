@@ -1,4 +1,4 @@
-import { TimerDisplay, TimerSetup } from '@/app/components/timer';
+import { TimerSetup, TimerDisplay } from '@/app/components/timer';
 import { TaskForm, TaskList, TaskFilter } from '@/app/components/tasks';
 import { PopupTaskPanel } from '@/app/components/popup';
 import { AppHeader } from '@/app/components/layout';
@@ -12,25 +12,23 @@ export default function Home() {
       <div className="flex w-full max-w-5xl flex-col gap-8">
         <AppHeader />
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <TimerDisplay />
+        {/* カウントダウン - 全幅 */}
+        <TimerDisplay />
+
+        {/* STEP 1 & 2 & 3 - 3カラム */}
+        <div className="grid gap-6 md:grid-cols-3">
           <TimerSetup />
+          <TaskForm />
+          <TaskFilter />
         </div>
 
-        <section id="tasks" className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-1">
-            <TaskForm />
-          </div>
-          <div className="lg:col-span-1">
-            <TaskFilter />
-          </div>
-          <div className="rounded-3xl bg-white p-6 shadow-sm lg:col-span-1">
-            <header className="mb-4">
-              <p className="text-sm font-semibold text-slate-500">STEP 3</p>
-              <h2 className="text-2xl font-bold text-slate-900">この間にやること</h2>
-            </header>
-            <TaskList />
-          </div>
+        {/* STEP 4 - 全幅 */}
+        <section id="tasks" className="rounded-3xl bg-white p-6 shadow-sm">
+          <header className="mb-4">
+            <p className="text-sm font-semibold text-slate-500">STEP 4</p>
+            <h2 className="text-2xl font-bold text-slate-900">この間にやること</h2>
+          </header>
+          <TaskList />
         </section>
 
         <StatisticsPanel />

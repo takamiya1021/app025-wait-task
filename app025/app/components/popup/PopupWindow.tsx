@@ -34,16 +34,28 @@ export function PopupWindow({
   }
 
   return createPortal(
-    <div
-      aria-label={ariaLabel}
-      aria-hidden={!isOpen}
-      className={`fixed right-6 bottom-6 w-full max-w-sm transition-opacity ${
-        isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-      }`}
-      style={{ zIndex: alwaysOnTop ? 9999 : undefined }}
-    >
-      {children}
-    </div>,
+    <>
+      {/* 背景オーバーレイ（スマホ用） */}
+      <div
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity ${
+          isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        style={{ zIndex: alwaysOnTop ? 9998 : undefined }}
+        aria-hidden="true"
+      />
+
+      {/* ポップアップコンテンツ */}
+      <div
+        aria-label={ariaLabel}
+        aria-hidden={!isOpen}
+        className={`fixed right-6 bottom-6 w-full max-w-sm rounded-2xl bg-white shadow-lg transition-opacity ${
+          isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        style={{ zIndex: alwaysOnTop ? 9999 : undefined }}
+      >
+        {children}
+      </div>
+    </>,
     container,
   );
 }

@@ -26,7 +26,7 @@ export function TaskList() {
   }
 
   return (
-    <ul className="flex flex-col gap-3" aria-label="タスクリスト">
+    <ul className="grid gap-3 md:grid-cols-3" aria-label="タスクリスト">
       {sortedTasks.map(task => (
         <li key={task.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-3">

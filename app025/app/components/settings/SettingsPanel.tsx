@@ -33,6 +33,9 @@ export function SettingsPanel() {
 
   const toggleSound = () => updateSettings({ notificationSound: !settings.notificationSound });
   const toggleAlwaysOnTop = () => updateSettings({ alwaysOnTop: !settings.alwaysOnTop });
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({ geminiApiKey: e.target.value || undefined });
+  };
 
   const handleRequestPermission = async () => {
     setRequesting(true);
@@ -44,11 +47,11 @@ export function SettingsPanel() {
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm" aria-label="設定">
       <header className="mb-4 flex flex-col gap-1">
-        <p className="text-sm font-semibold text-slate-500">STEP 5</p>
+        <p className="text-sm font-semibold text-slate-500">STEP 7</p>
         <h2 className="text-2xl font-bold text-slate-900">通知と表示の設定</h2>
         <p className="text-sm text-slate-500">サウンド通知やポップアップ表示をカスタマイズ</p>
       </header>
-      <div className="flex flex-col gap-4" data-testid="settings-panel">
+      <div className="grid gap-4 md:grid-cols-2" data-testid="settings-panel">
         <label className="flex items-center justify-between rounded-2xl border border-slate-100 p-4">
           <div>
             <p className="font-semibold text-slate-900">タイマー完了時に通知</p>
@@ -80,6 +83,21 @@ export function SettingsPanel() {
             {settings.alwaysOnTop ? 'ON' : 'OFF'}
           </button>
         </label>
+
+        <div className="rounded-2xl border border-slate-100 p-4">
+          <label htmlFor="gemini-api-key">
+            <p className="font-semibold text-slate-900">Gemini API キー</p>
+            <p className="text-sm text-slate-500">AI機能を使用するためのAPIキー（ローカルストレージに保存）</p>
+          </label>
+          <input
+            id="gemini-api-key"
+            type="password"
+            value={settings.geminiApiKey || ''}
+            onChange={handleApiKeyChange}
+            placeholder="AIzaSy..."
+            className="mt-3 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          />
+        </div>
 
         <div className="rounded-2xl border border-slate-100 p-4">
           <p className="font-semibold text-slate-900">通知許可</p>

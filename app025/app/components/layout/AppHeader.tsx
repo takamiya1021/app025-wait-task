@@ -22,12 +22,6 @@ export function AppHeader() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            className="rounded-full bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            タイマーを起動
-          </button>
           <Link
             href="#tasks"
             className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
