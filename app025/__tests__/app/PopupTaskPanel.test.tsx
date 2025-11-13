@@ -69,4 +69,51 @@ describe('PopupTaskPanel', () => {
     expect(screen.queryByText('肩回し')).not.toBeInTheDocument();
     expect(screen.getByText('参考資料チェック')).toBeInTheDocument();
   });
+
+  it('最小化ボタンでコンテンツを隠せる', () => {
+    act(() => {
+      useTaskStore.setState({
+        currentSession: {
+          id: 'session-3',
+          startTime: new Date('2025-01-01T00:00:00Z'),
+          duration: 5,
+          remainingTime: 240,
+          isRunning: true,
+          isPaused: false,
+          completedTasks: [],
+        },
+      });
+    });
+
+    render(<PopupTaskPanel />);
+
+    // 初期状態：コンテンツが表示されている
+    expect(screen.getByLabelText('ポップアップ進捗')).toBeInTheDocument();
+    expect(screen.getByText('肩回し')).toBeInTheDocument();
+
+    // 最小化ボタンをクリック
+    const minimizeButton = screen.getByRole('button', { name: '最小化' });
+    act(() => {
+      minimizeButton.click();
+    });
+
+    // コンテンツが非表示になる
+    expect(screen.queryByLabelText('ポップアップ進捗')).not.toBeInTheDocument();
+    expect(screen.queryByText('肩回し')).not.toBeInTheDocument();
+
+    // ボタンのラベルが「展開」に変わる
+    expect(screen.getByRole('button', { name: '展開' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '最小化' })).not.toBeInTheDocument();
+
+    // 展開ボタンをクリック
+    const expandButton = screen.getByRole('button', { name: '展開' });
+    act(() => {
+      expandButton.click();
+    });
+
+    // コンテンツが再表示される
+    expect(screen.getByLabelText('ポップアップ進捗')).toBeInTheDocument();
+    expect(screen.getByText('肩回し')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '最小化' })).toBeInTheDocument();
+  });
 });
