@@ -39,14 +39,12 @@ export function PopupTaskPanel() {
   const filterByDuration = useTaskStore(state => state.filteredTasks);
   const alwaysOnTopSetting = useTaskStore(state => state.settings.alwaysOnTop);
   const stopTimer = useTaskStore(state => state.stopTimer);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
 
   useEffect(() => {
     if (currentSession?.isRunning) {
-      setIsOpen(true);
-    } else if (!currentSession) {
-      setIsOpen(false);
+      setIsExpanded(true);
     }
   }, [currentSession]);
 
@@ -65,7 +63,7 @@ export function PopupTaskPanel() {
 
   return (
     <PopupWindow
-      isOpen={isOpen}
+      isOpen={!!currentSession}
       alwaysOnTop={alwaysOnTopSetting}
       ariaLabel="タイマーポップアップ"
     >
@@ -85,15 +83,15 @@ export function PopupTaskPanel() {
           </button>
           <button
             type="button"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsExpanded(!isExpanded)}
             className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors"
-            aria-pressed={isOpen}
+            aria-pressed={isExpanded}
           >
-            {isOpen ? '最小化' : '展開' }
+            {isExpanded ? '最小化' : '展開' }
           </button>
         </div>
       </div>
-      {isOpen && (
+      {isExpanded && (
         <div className="flex flex-col gap-4 px-5 py-4">
           <ProgressBar
             value={Math.max(0, currentSession.duration * 60 - currentSession.remainingTime)}
