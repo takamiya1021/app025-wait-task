@@ -38,9 +38,9 @@ export function TimerDisplay() {
   const statusLabel = useMemo(() => {
     if (isPaused) return '一時停止中';
     if (isRunning) return '進行中';
-    if (duration) return '完了';
+    if (isCompleted) return '完了';
     return '待機中';
-  }, [isPaused, isRunning, duration]);
+  }, [isPaused, isRunning, isCompleted]);
 
   return (
     <section className="flex w-full flex-col gap-4 rounded-2xl bg-slate-900 p-6 text-white shadow-md">
