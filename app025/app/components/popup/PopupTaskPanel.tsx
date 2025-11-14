@@ -93,6 +93,14 @@ export function PopupTaskPanel() {
           >
             {isExpanded ? '最小化' : '展開' }
           </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors"
+            aria-label="ポップアップを非表示"
+          >
+            非表示
+          </button>
         </div>
       </div>
       {isExpanded && (

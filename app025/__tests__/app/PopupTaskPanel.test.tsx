@@ -116,4 +116,36 @@ describe('PopupTaskPanel', () => {
     expect(screen.getByText('肩回し')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '最小化' })).toBeInTheDocument();
   });
+
+  it('非表示ボタンでポップアップ全体を非表示にできる', () => {
+    act(() => {
+      useTaskStore.setState({
+        currentSession: {
+          id: 'session-4',
+          startTime: new Date('2025-01-01T00:00:00Z'),
+          duration: 5,
+          remainingTime: 240,
+          isRunning: true,
+          isPaused: false,
+          completedTasks: [],
+        },
+      });
+    });
+
+    render(<PopupTaskPanel />);
+
+    // 初期状態：ポップアップが表示されている
+    const popup = screen.getByLabelText('タイマーポップアップ');
+    expect(popup).toBeInTheDocument();
+    expect(popup).toHaveClass('opacity-100');
+
+    // 非表示ボタンをクリック
+    const hideButton = screen.getByRole('button', { name: 'ポップアップを非表示' });
+    act(() => {
+      hideButton.click();
+    });
+
+    // ポップアップが非表示になる（opacity-0クラスが付与される）
+    expect(popup).toHaveClass('opacity-0');
+  });
 });
