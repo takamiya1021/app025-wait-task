@@ -37,8 +37,8 @@ export function PopupWindow({
     <>
       {/* 背景オーバーレイ（スマホ用） */}
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity ${
-          isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity pointer-events-none ${
+          isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ zIndex: alwaysOnTop ? 9998 : undefined }}
         aria-hidden="true"
