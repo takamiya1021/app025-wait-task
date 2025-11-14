@@ -1,5 +1,5 @@
 import { TimerSetup, TimerDisplay } from '@/app/components/timer';
-import { TaskForm, TaskList, TaskFilter } from '@/app/components/tasks';
+import { TaskForm, TaskFilter, TaskListSection } from '@/app/components/tasks';
 import { PopupTaskPanel } from '@/app/components/popup';
 import { AppHeader } from '@/app/components/layout';
 import { StatisticsPanel } from '@/app/components/stats';
@@ -15,24 +15,22 @@ export default function Home() {
         {/* カウントダウン - 全幅 */}
         <TimerDisplay />
 
-        {/* STEP 1 & 2 & 3 - 3カラム */}
-        <div className="grid gap-6 md:grid-cols-3">
+        {/* STEP 1 & 2 - 2カラム */}
+        <div className="grid gap-6 md:grid-cols-2">
           <TimerSetup />
           <TaskForm />
-          <TaskFilter />
         </div>
 
+        {/* STEP 3 - 全幅 */}
+        <AITaskSuggestion />
+
         {/* STEP 4 - 全幅 */}
-        <section id="tasks" className="rounded-3xl bg-white p-6 shadow-sm">
-          <header className="mb-4">
-            <p className="text-sm font-semibold text-slate-500">STEP 4</p>
-            <h2 className="text-2xl font-bold text-slate-900">この間にやること</h2>
-          </header>
-          <TaskList />
-        </section>
+        <TaskFilter />
+
+        {/* STEP 5 - 全幅 */}
+        <TaskListSection />
 
         <StatisticsPanel />
-        <AITaskSuggestion />
         <SettingsPanel />
 
         <PopupTaskPanel />

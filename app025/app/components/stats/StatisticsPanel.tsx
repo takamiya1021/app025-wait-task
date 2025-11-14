@@ -46,10 +46,19 @@ export function StatisticsPanel() {
   const [aiLoading, setAiLoading] = useState(false);
   const handleAnalysis = async () => {
     setAiLoading(true);
-    const result = await analyzeProductivityWithAI({ history, apiKey: settings.geminiApiKey });
-    setAnalysis(result.summary);
-    setTips(result.tips ?? []);
-    setAiLoading(false);
+    setAnalysis(null); // 前回の結果をクリア
+    setTips([]);
+    try {
+      const result = await analyzeProductivityWithAI({ history, apiKey: settings.geminiApiKey });
+      setAnalysis(result.summary);
+      setTips(result.tips ?? []);
+    } catch (error) {
+      console.error('AI分析でエラーが発生:', error);
+      setAnalysis('AI分析中にエラーが発生しました');
+      setTips([]);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const cards = useMemo(() => [
@@ -78,7 +87,7 @@ export function StatisticsPanel() {
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm" aria-label="利用統計">
       <header className="mb-4 flex flex-col gap-1">
-        <p className="text-sm font-semibold text-slate-500">STEP 5</p>
+        <p className="text-sm font-semibold text-slate-500">STEP 6</p>
         <h2 className="text-2xl font-bold text-slate-900">利用状況サマリー</h2>
         <p className="text-sm text-slate-500">今日と直近1週間の成果をチェック</p>
       </header>

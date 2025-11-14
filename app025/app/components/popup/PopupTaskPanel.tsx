@@ -38,6 +38,7 @@ export function PopupTaskPanel() {
   const currentSession = useTaskStore(state => state.currentSession);
   const filterByDuration = useTaskStore(state => state.filteredTasks);
   const alwaysOnTopSetting = useTaskStore(state => state.settings.alwaysOnTop);
+  const showPopupSetting = useTaskStore(state => state.settings.showPopup);
   const stopTimer = useTaskStore(state => state.stopTimer);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -49,8 +50,8 @@ export function PopupTaskPanel() {
     const sessionId = currentSession?.id ?? null;
     const isRunning = currentSession?.isRunning ?? false;
 
-    // 新しいセッションが開始された場合
-    if (isRunning && sessionId !== prevSessionIdRef.current) {
+    // 新しいセッションが開始された場合（showPopup設定がONの場合のみ）
+    if (isRunning && sessionId !== prevSessionIdRef.current && showPopupSetting) {
       setIsOpen(true);
       setIsExpanded(true);
       prevSessionIdRef.current = sessionId;
@@ -59,7 +60,7 @@ export function PopupTaskPanel() {
       setIsOpen(false);
       prevSessionIdRef.current = null;
     }
-  }, [currentSession?.id, currentSession?.isRunning, currentSession]);
+  }, [currentSession?.id, currentSession?.isRunning, currentSession, showPopupSetting]);
 
   const remainingMinutes = Math.max(0, Math.ceil((currentSession?.remainingTime ?? 0) / 60));
 
@@ -69,8 +70,8 @@ export function PopupTaskPanel() {
     return filterByDuration(Math.max(1, remainingMinutes), priority);
   }, [currentSession, priorityFilter, filterByDuration, remainingMinutes]);
 
-  // デスクトップまたはセッションがない場合は表示しない
-  if (isDesktop || !currentSession) {
+  // セッションがない場合は表示しない
+  if (!currentSession) {
     return null;
   }
 

@@ -13,8 +13,18 @@ const PRIORITY_LABELS = {
 export function TaskForm() {
   const addTask = useTaskStore(state => state.addTask);
   const settings = useTaskStore(state => state.settings);
+  const timerDuration = useTaskStore(state => state.timerDuration);
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState(3);
+
+  const handleDurationChange = (value: string) => {
+    const num = parseInt(value, 10);
+    if (!isNaN(num) && num >= 1 && num <= 60) {
+      setDuration(num);
+    } else if (value === '') {
+      // 空欄の場合は何もしない（入力中）
+    }
+  };
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [classifying, setClassifying] = useState(false);
   const [classificationMessage, setClassificationMessage] = useState<string | null>(null);
@@ -30,6 +40,10 @@ export function TaskForm() {
     }
     if (duration < 1 || duration > 60) {
       setErrorMessage('所要時間は1〜60分で指定してください');
+      return;
+    }
+    if (duration > timerDuration) {
+      setErrorMessage(`所要時間が待ち時間（${timerDuration}分）を超えています`);
       return;
     }
     setErrorMessage(null);
@@ -76,11 +90,12 @@ export function TaskForm() {
           </label>
           <input
             id="task-duration"
-            type="number"
-            min={1}
-            max={30}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={duration}
-            onChange={event => setDuration(Number(event.target.value))}
+            onChange={event => handleDurationChange(event.target.value)}
+            onFocus={event => event.target.select()}
             className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-base text-slate-900 focus:border-slate-500 focus:outline-none"
           />
         </div>
@@ -123,10 +138,12 @@ export function TaskForm() {
             const result = await classifyTaskWithAI({
               title,
               apiKey: settings.geminiApiKey,
+              maxDuration: timerDuration,
             });
             setDuration(Math.min(60, Math.max(1, result.duration)));
             setPriority(result.priority);
-            setClassificationMessage(`${result.category} / 約${result.duration}分 / ${result.priority.toUpperCase()}`);
+            const priorityLabel = PRIORITY_LABELS[result.priority] || result.priority;
+            setClassificationMessage(`約${result.duration}分 / ${priorityLabel}`);
             setClassifying(false);
           }}
           disabled={classifying || !title.trim()}

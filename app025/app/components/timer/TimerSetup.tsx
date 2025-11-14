@@ -2,14 +2,19 @@
 
 import { useTaskStore } from '@/store/useTaskStore';
 
-const PRESET_MINUTES = [1, 3, 5, 10];
+const PRESET_MINUTES = [1, 3, 5, 10, 15];
 
 export function TimerSetup() {
   const timerDuration = useTaskStore(state => state.timerDuration);
   const setTimerDuration = useTaskStore(state => state.setTimerDuration);
 
-  const handleDurationChange = (minutes: number) => {
-    setTimerDuration(minutes);
+  const handleDurationChange = (value: string | number) => {
+    const num = typeof value === 'string' ? parseInt(value, 10) : value;
+    if (!isNaN(num) && num >= 1 && num <= 120) {
+      setTimerDuration(num);
+    } else if (value === '') {
+      // 空欄の場合は何もしない（入力中）
+    }
   };
 
   return (
@@ -26,11 +31,12 @@ export function TimerSetup() {
         </label>
         <input
           id="duration-input"
-          type="number"
-          min={1}
-          max={120}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={timerDuration}
-          onChange={event => handleDurationChange(Number(event.target.value))}
+          onChange={event => handleDurationChange(event.target.value)}
+          onFocus={event => event.target.select()}
           className="w-32 rounded-lg border border-slate-200 px-3 py-2 text-lg text-slate-900 focus:border-slate-500 focus:outline-none"
         />
         <div className="flex flex-wrap gap-2">

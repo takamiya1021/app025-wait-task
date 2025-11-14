@@ -44,6 +44,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 export interface AppSettings {
   notificationSound: boolean;
   alwaysOnTop: boolean;
+  showPopup: boolean;
   defaultDuration: number;
   popupWidth: number;
   popupHeight: number;

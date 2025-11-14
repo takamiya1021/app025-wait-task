@@ -57,6 +57,7 @@ const priorityOrder: Record<TaskPriority, number> = {
 const defaultSettings: AppSettings = {
   notificationSound: true,
   alwaysOnTop: true,
+  showPopup: true,
   defaultDuration: 5,
   popupWidth: 400,
   popupHeight: 600,
@@ -158,9 +159,48 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }),
     }));
 
-    // 完了状態にした場合のみ統計に記録
+    // チェックON → カウント+1
     if (nextCompleted) {
       get().recordSession([id]);
+    }
+    // チェックOFF → カウント-1
+    else if (task.completed) {
+      const todayKey = new Date().toISOString().split('T')[0];
+      const { history, progress } = get();
+      const existingHistoryIndex = history.findIndex((item) => item.date === todayKey);
+
+      if (existingHistoryIndex >= 0) {
+        set((state) => {
+          const nextHistory = [...state.history];
+          const existing = nextHistory[existingHistoryIndex];
+
+          nextHistory[existingHistoryIndex] = {
+            ...existing,
+            totalTime: Math.max(0, existing.totalTime - task.duration),
+            completedTasks: Math.max(0, existing.completedTasks - 1),
+            tasksByCategory: Object.entries(existing.tasksByCategory).reduce((acc, [category, count]) => {
+              if (category === (task.category ?? 'uncategorized')) {
+                const newCount = Math.max(0, count - 1);
+                if (newCount > 0) {
+                  acc[category] = newCount;
+                }
+              } else {
+                acc[category] = count;
+              }
+              return acc;
+            }, {} as Record<string, number>),
+          };
+
+          return {
+            history: nextHistory,
+            progress: {
+              ...state.progress,
+              totalCompletedTasks: Math.max(0, state.progress.totalCompletedTasks - 1),
+              totalFocusMinutes: Math.max(0, (state.progress.totalFocusMinutes ?? 0) - task.duration),
+            },
+          };
+        });
+      }
     }
   },
 

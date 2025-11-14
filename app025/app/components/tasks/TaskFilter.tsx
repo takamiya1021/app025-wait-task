@@ -7,6 +7,13 @@ import { filterTasksByDuration } from '@/app/lib/taskUtils';
 
 const durationPresets = [3, 5, 10, 15];
 
+const PRIORITY_LABELS = {
+  all: 'すべて',
+  high: '高優先',
+  medium: '通常',
+  low: '低優先',
+} as const;
+
 export function TaskFilter() {
   const filters = useTaskStore((state) => state.filters);
   const updateFilters = useTaskStore((state) => state.updateFilters);
@@ -20,7 +27,7 @@ export function TaskFilter() {
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm" aria-label="タスクフィルター">
       <header className="mb-4">
-        <p className="text-sm font-semibold text-slate-500">STEP 3</p>
+        <p className="text-sm font-semibold text-slate-500">STEP 4</p>
         <h2 className="text-2xl font-bold text-slate-900">タスク絞り込み</h2>
         <p className="text-sm text-slate-500">ぴったりのタスクだけ表示できます（現在 {visibleCount} 件）</p>
       </header>
@@ -59,7 +66,7 @@ export function TaskFilter() {
                 }`}
                 aria-pressed={filters.priority === level}
               >
-                {level === 'all' ? 'すべて' : level.toUpperCase()}
+                {PRIORITY_LABELS[level]}
               </button>
             ))}
           </div>

@@ -24,8 +24,10 @@ const permissionLabel = (state: NotificationPermissionState) => {
 export function SettingsPanel() {
   const settings = useTaskStore(state => state.settings);
   const updateSettings = useTaskStore(state => state.updateSettings);
+  const reset = useTaskStore(state => state.reset);
   const [permission, setPermission] = useState<NotificationPermissionState>('default');
   const [requesting, setRequesting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     setPermission(getNotificationPermissionState());
@@ -33,6 +35,7 @@ export function SettingsPanel() {
 
   const toggleSound = () => updateSettings({ notificationSound: !settings.notificationSound });
   const toggleAlwaysOnTop = () => updateSettings({ alwaysOnTop: !settings.alwaysOnTop });
+  const toggleShowPopup = () => updateSettings({ showPopup: !settings.showPopup });
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateSettings({ geminiApiKey: e.target.value || undefined });
   };
@@ -42,6 +45,16 @@ export function SettingsPanel() {
     const result = await requestNotificationPermission();
     setPermission(result);
     setRequesting(false);
+  };
+
+  const handleReset = () => {
+    if (showResetConfirm) {
+      reset();
+      setShowResetConfirm(false);
+      alert('全てのデータがリセットされました');
+    } else {
+      setShowResetConfirm(true);
+    }
   };
 
   return (
@@ -84,6 +97,22 @@ export function SettingsPanel() {
           </button>
         </label>
 
+        <label className="flex items-center justify-between rounded-2xl border border-slate-100 p-4">
+          <div>
+            <p className="font-semibold text-slate-900">ポップアップを自動表示</p>
+            <p className="text-sm text-slate-500">タイマー開始時にポップアップを表示します</p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleShowPopup}
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+              settings.showPopup ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
+            }`}
+          >
+            {settings.showPopup ? 'ON' : 'OFF'}
+          </button>
+        </label>
+
         <div className="rounded-2xl border border-slate-100 p-4">
           <label htmlFor="gemini-api-key">
             <p className="font-semibold text-slate-900">Gemini API キー</p>
@@ -110,6 +139,31 @@ export function SettingsPanel() {
           >
             {permission === 'granted' ? '許可済み' : '通知を許可する'}
           </button>
+        </div>
+
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-4">
+          <p className="font-semibold text-red-900">データリセット</p>
+          <p className="text-sm text-red-700">全てのタスク・統計・設定をリセットします（元に戻せません）</p>
+          <button
+            type="button"
+            onClick={handleReset}
+            className={`mt-3 rounded-full px-4 py-2 text-sm font-semibold transition ${
+              showResetConfirm
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'border border-red-300 bg-white text-red-600 hover:bg-red-50'
+            }`}
+          >
+            {showResetConfirm ? '本当にリセットする' : 'データをリセット'}
+          </button>
+          {showResetConfirm && (
+            <button
+              type="button"
+              onClick={() => setShowResetConfirm(false)}
+              className="ml-2 mt-3 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              キャンセル
+            </button>
+          )}
         </div>
       </div>
     </section>
