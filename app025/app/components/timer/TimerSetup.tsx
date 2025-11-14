@@ -31,7 +31,7 @@ export function TimerSetup() {
           max={120}
           value={timerDuration}
           onChange={event => handleDurationChange(Number(event.target.value))}
-          className="w-32 rounded-lg border border-slate-200 px-3 py-2 text-lg focus:border-slate-500 focus:outline-none"
+          className="w-32 rounded-lg border border-slate-200 px-3 py-2 text-lg text-slate-900 focus:border-slate-500 focus:outline-none"
         />
         <div className="flex flex-wrap gap-2">
           {PRESET_MINUTES.map(minute => (
