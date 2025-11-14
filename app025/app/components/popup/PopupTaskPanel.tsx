@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
 import { PopupWindow } from '@/app/components/popup/PopupWindow';
 import { ProgressBar } from '@/app/components/progress';
@@ -42,15 +42,24 @@ export function PopupTaskPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
+  const prevSessionIdRef = useRef<string | null>(null);
 
+  // セッションIDが変わった時のみ、ポップアップを開いて展開状態にする
   useEffect(() => {
-    if (currentSession?.isRunning) {
+    const sessionId = currentSession?.id ?? null;
+    const isRunning = currentSession?.isRunning ?? false;
+
+    // 新しいセッションが開始された場合
+    if (isRunning && sessionId !== prevSessionIdRef.current) {
       setIsOpen(true);
       setIsExpanded(true);
+      prevSessionIdRef.current = sessionId;
     } else if (!currentSession) {
+      // セッションがない場合はポップアップを閉じる
       setIsOpen(false);
+      prevSessionIdRef.current = null;
     }
-  }, [currentSession]);
+  }, [currentSession?.id, currentSession?.isRunning, currentSession]);
 
   const remainingMinutes = Math.max(0, Math.ceil((currentSession?.remainingTime ?? 0) / 60));
 
