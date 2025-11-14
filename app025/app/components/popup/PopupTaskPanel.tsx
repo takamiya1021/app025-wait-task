@@ -80,7 +80,7 @@ export function PopupTaskPanel() {
           <button
             type="button"
             onClick={stopTimer}
-            className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors"
+            className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors touch-manipulation"
             aria-label="タイマーを停止"
           >
             停止
@@ -88,7 +88,7 @@ export function PopupTaskPanel() {
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors"
+            className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors touch-manipulation"
             aria-pressed={isExpanded}
           >
             {isExpanded ? '最小化' : '展開' }
